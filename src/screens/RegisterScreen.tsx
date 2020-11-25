@@ -1,14 +1,14 @@
-import React, {FC, useState} from 'react';
-import {Button, StyleSheet, TextInput, View} from 'react-native';
+import React, {FC, useContext, useState} from 'react';
+import {Alert, Button, StyleSheet, TextInput, View} from 'react-native';
 import {Link} from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {AuthContext} from '../contexts/AuthContext';
 
-type Props = {
-  navigation: any;
-};
+// type Props = {
+//   navigation: any;
+// };
 
-const RegisterScreen: FC<Props> = ({navigation}) => {
+const RegisterScreen: FC = () => {
+  const auth = useContext(AuthContext);
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -17,42 +17,9 @@ const RegisterScreen: FC<Props> = ({navigation}) => {
 
   const registerHandler = async () => {
     if (form.password !== form.passwordR) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Passwords do not match',
-      });
+      Alert.alert('Error', 'Passwords do not match');
     } else {
-      try {
-        const response = await fetch(
-          'http://192.168.0.104:4000/auth/register',
-          {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Content-type': 'application/json',
-            },
-            body: JSON.stringify({email: form.email, password: form.password}),
-          },
-        );
-        const data = await response.json();
-        if (response.ok) {
-          AsyncStorage.setItem('token', data.token);
-          Toast.show({
-            type: 'success',
-            text1: 'Welcome!',
-            text2: data.message,
-          });
-        } else {
-          throw new Error(data.message);
-        }
-      } catch (err) {
-        Toast.show({
-          type: 'error',
-          text1: 'Auth error',
-          text2: err.message,
-        });
-      }
+      auth.register(form);
     }
   };
 
